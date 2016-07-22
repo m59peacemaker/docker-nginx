@@ -1,0 +1,23 @@
+{
+  "name": "docker-nginx",
+  "version": "0.0.0",
+  "private": "true",
+  "description": "nginx docker image with dynamic conf support via ejs",
+  "bin": {
+    "startup": "bin/startup"
+  },
+  "scripts": {
+    "test": "npm run build && tape test/*.js",
+    "build": "docker build -t pmkr/nginx:$npm_package_version ."
+  },
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-ejs": "^2.1.2",
+    "js-yaml": "^3.6.1",
+    "require-reload": "^0.2.2"
+  },
+  "devDependencies": {
+    "tape": "^4.6.0",
+    "try-net-connect": "^3.0.0"
+  }
+}
