@@ -15,21 +15,15 @@ const compile = () => {
 compile().on('end', () => {
   // start nginx
   const nginxProcess = spawn('nginx', ['-g', 'daemon off;'], {stdio: 'inherit'})
-/*
+
+  // TODO: do TERM, INT, QUIT need to be here?
   // pass signals through to nginx
-  ;[
-    'TERM',
-    'INT',
-    'QUIT',
-    'USR1',
-    'USR2',
-    'WINCH'
-  ].forEach(signal => {
+  ;['USR1', 'USR2', 'WINCH'].forEach(signal => {
     signal = 'SIG' + signal
     process.on(signal, () => nginxProcess.kill(signal))
   })
-*/
-  // hijack HUP, compile, pass to nginx
+
+  // on HUP, compile and then pass to nginx
   process.on('SIGHUP', () => {
     compile().on('end', () => nginxProcess.kill('SIGHUP'))
   })
