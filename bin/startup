@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 const spawn = require('child_process').spawn
+const chalk = require('chalk')
 const compileConf = require('../lib/compile-conf')
 
 // compile with logging
 const compile = () => {
-  console.log('Compiling...')
+  console.log(chalk.bold('Compiling...'))
   return compileConf().on('end', () => {
-    console.log('Compiling successful')
+    console.log(chalk.bold(`Compile successful ${chalk.green('\u2714')}`))
   })
 }
 

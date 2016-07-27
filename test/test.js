@@ -6,7 +6,7 @@ const pkg = require('../package.json')
 const image = 'pmkr/nginx:' + pkg.version
 
 const spawn = (command, args, options = {}) => {
-  //options.stdio = 'inherit' // makes docker processes loud
+  options.stdio = 'inherit' // makes docker processes loud
   return _spawn(command, args, options)
 }
 

@@ -11,6 +11,7 @@
     "build": "docker build -t pmkr/nginx:$npm_package_version ."
   },
   "dependencies": {
+    "chalk": "^1.1.3",
     "gulp": "^3.9.1",
     "gulp-ejs": "^2.1.2",
     "js-yaml": "^3.6.1",
