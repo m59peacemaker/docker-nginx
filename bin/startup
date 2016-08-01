@@ -2,30 +2,51 @@
 
 const spawn = require('child_process').spawn
 const chalk = require('chalk')
-const compileConf = require('../lib/compile-conf')
+const {watch} = require('chokidar')
+const debounce = require('debounce')
+const _prepare = require('../lib/prepare')
 
-// compile with logging
-const compile = () => {
+const WATCH = process.env.WATCH === 'true' ? true : false
+
+// prepare with logging
+const prepare = () => {
   console.log(chalk.bold('Compiling...'))
-  return compileConf().on('end', () => {
+  return _prepare().then(() => {
     console.log(chalk.bold(`Compile successful ${chalk.green('\u2714')}`))
   })
 }
 
-// initial compile
-compile().on('end', () => {
-  // start nginx
-  const nginxProcess = spawn('nginx', ['-g', 'daemon off;'], {stdio: 'inherit'})
-
-  // TODO: do TERM, INT, QUIT need to be here?
-  // pass signals through to nginx
-  ;['USR1', 'USR2', 'WINCH'].forEach(signal => {
-    signal = 'SIG' + signal
-    process.on(signal, () => nginxProcess.kill(signal))
+// initial prepare
+prepare()
+  .catch(err => {
+    console.error(err)
+    process.exit(1)
   })
+  .then(() => {
+    if (WATCH) {
+      return new Promise(resolve => {
+        const watcher = watch('/nginx', {ignoreInitial: true}).on('ready', () => resolve(watcher))
+      })
+    }
+  }).then(watcher => {
+    // start nginx
+    const nginxProcess = spawn('nginx', ['-g', 'daemon off;'], {stdio: 'inherit'})
+    const prepareThenReload = () => {
+      prepare().then(() => nginxProcess.kill('SIGHUP'))
+    }
 
-  // on HUP, compile and then pass to nginx
-  process.on('SIGHUP', () => {
-    compile().on('end', () => nginxProcess.kill('SIGHUP'))
+    // pass signals through to nginx
+    ;['USR1', 'USR2', 'WINCH'].forEach(signal => {
+      signal = 'SIG' + signal
+      process.on(signal, () => nginxProcess.kill(signal))
+    })
+
+    process.on('SIGHUP', prepareThenReload)
+
+    if (watcher) {
+      const onChange = debounce(prepareThenReload)
+      watcher
+        .on('add',    onChange)
+        .on('change', onChange)
+    }
   })
-})

@@ -3,7 +3,7 @@ const _spawn = require('child_process').spawn
 const fs = require('fs')
 const tryConnect = require('try-net-connect')
 const pkg = require('../package.json')
-const image = 'pmkr/nginx:' + pkg.version
+const image = 'pmkr/nginx'
 
 const spawn = (command, args, options = {}) => {
   options.stdio = 'inherit' // makes docker processes loud
@@ -183,15 +183,61 @@ test('reloads data.js module on nginx reload', t => {
   })
 })
 
-test('exits if given invalid yaml data file', t => {
+test('exits if given invalid yaml data file at startup', t => {
   const p = spawn('docker', [
     'run',
     '--rm',
     '--net=host',
     '-v', __dirname + '/fixtures/invalid.yaml:/nginx/data.yaml',
     image
-  ]).on('exit', (exitCode) => {
+  ]).on('exit', exitCode => {
     t.equal(exitCode, 1)
     t.end()
+  })
+})
+
+test('exits if given invalid requireable file at startup', t => {
+  const p = spawn('docker', [
+    'run',
+    '--rm',
+    '--net=host',
+    '-v', __dirname + '/fixtures/invalid.js:/nginx/data.js',
+    image
+  ]).on('exit', exitCode => {
+    t.equal(exitCode, 1)
+    t.end()
+  })
+})
+
+test('watches and reloads when WATCH=true', t => {
+  const makeDataFile = port => {
+    fs.writeFileSync('/tmp/data.js', `module.exports = {port: ${port}}`)
+  }
+
+  makeDataFile(1234)
+
+  const p = spawn('docker', [
+    'run',
+    '--rm',
+    '--net=host',
+    '-e', 'WATCH=true',
+    '-v', __dirname + '/fixtures/variablePort.conf:/nginx/nginx.conf',
+    '-v', '/tmp/data.js:/nginx/data.js',
+    image
+  ]).on('close', () => t.end())
+
+  tryConnect({
+    port: 1234,
+    retry: 500
+  }).on('connected', () => {
+    makeDataFile(1237)
+
+    tryConnect({
+      port: 1237,
+      retry: 500
+    }).on('connected', () => {
+      p.kill()
+      t.pass()
+    })
   })
 })
