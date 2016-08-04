@@ -209,7 +209,7 @@ test('exits if given invalid requireable file at startup', t => {
   })
 })
 
-test('watches and reloads when WATCH=true', t => {
+test('watches and reloads with single WATCH arg', t => {
   const makeDataFile = port => {
     fs.writeFileSync('/tmp/data.js', `module.exports = {port: ${port}}`)
   }
@@ -220,7 +220,40 @@ test('watches and reloads when WATCH=true', t => {
     'run',
     '--rm',
     '--net=host',
-    '-e', 'WATCH=true',
+    '-e', 'WATCH=/nginx/*.js',
+    '-v', __dirname + '/fixtures/variablePort.conf:/nginx/nginx.conf',
+    '-v', '/tmp/data.js:/nginx/data.js',
+    image
+  ]).on('close', () => t.end())
+
+  tryConnect({
+    port: 1234,
+    retry: 500
+  }).on('connected', () => {
+    makeDataFile(1237)
+
+    tryConnect({
+      port: 1237,
+      retry: 500
+    }).on('connected', () => {
+      p.kill()
+      t.pass()
+    })
+  })
+})
+
+test('watches and reloads with two WATCH args', t => {
+  const makeDataFile = port => {
+    fs.writeFileSync('/tmp/data.js', `module.exports = {port: ${port}}`)
+  }
+
+  makeDataFile(1234)
+
+  const p = spawn('docker', [
+    'run',
+    '--rm',
+    '--net=host',
+    '-e', 'WATCH=/nginx/*.conf -- /nginx/*.js',
     '-v', __dirname + '/fixtures/variablePort.conf:/nginx/nginx.conf',
     '-v', '/tmp/data.js:/nginx/data.js',
     image

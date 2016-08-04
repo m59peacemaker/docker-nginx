@@ -5,14 +5,15 @@ const chalk = require('chalk')
 const {watch} = require('chokidar')
 const debounce = require('debounce')
 const _prepare = require('../lib/prepare')
+const env      = process.env
 
-const WATCH = process.env.WATCH === 'true' ? true : false
+const WATCH = env.WATCH ? env.WATCH.split(' -- ') : false
 
 // prepare with logging
 const prepare = () => {
-  console.log(chalk.bold('Compiling...'))
+  console.log(chalk.bold('Preparing...'))
   return _prepare().then(() => {
-    console.log(chalk.bold(`Compile successful ${chalk.green('\u2714')}`))
+    console.log(chalk.bold(`Preparation successful ${chalk.green('\u2714')}`))
   })
 }
 
@@ -25,7 +26,7 @@ prepare()
   .then(() => {
     if (WATCH) {
       return new Promise(resolve => {
-        const watcher = watch('/nginx', {ignoreInitial: true}).on('ready', () => resolve(watcher))
+        const watcher = watch(WATCH, {ignoreInitial: true}).on('ready', () => resolve(watcher))
       })
     }
   }).then(watcher => {

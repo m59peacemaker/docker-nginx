@@ -22,15 +22,23 @@ nginx configuration that will be prepared and moved to /etc/nginx
 
 ## environment variables
 
-### `WATCH=true` true, false
+### `WATCH`
 
-Whether to watch /nginx and re-compile conf files and reload nginx on change.
+Glob pattern(s) of files to watch, separated by ` -- ` (space, dash, dash, space). When a watched file changes, conf files will be recompiled and nginx will reload.
+
+```sh
+-e WATCH="/nginx/*.conf"
+```
+
+```sh
+-e WATCH="/nginx/*.conf -- /nginx/data.*"
+```
 
 ## signals
 
 ### SIGHUP
 
-If you signal `SIGHUP` to the container, the conf files will be re-compiled and nginx will reload as normal.
+If you signal `SIGHUP` to the container, conf files will be re-compiled and nginx will reload.
 
 ## .conf templates
 
