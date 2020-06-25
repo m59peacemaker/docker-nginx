@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "chalk": "^1.1.3",
-    "chokidar": "^1.6.0",
+    "chokidar": "^3.4.0",
     "debounce": "^1.0.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-ejs": "^2.1.2",
     "js-yaml": "^3.6.1",
     "require-reload": "^0.2.2"

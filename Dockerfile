@@ -1,16 +1,12 @@
-FROM mhart/alpine-node:6.3.1
+FROM node:14.4.0-alpine3.12
 
-RUN apk add --update wget ca-certificates nginx=1.10.1-r1
+RUN apk add --no-cache \
+  ca-certificates \
+  dumb-init \
+  nginx=1.18.0-r0
 
 # alpine nginx build needs this to exist
 RUN mkdir /run/nginx
-
-RUN \
-  wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64 && \
-  chmod +x /usr/local/bin/dumb-init
-
-# cleanup
-RUN apk del --purge wget
 
 ENV NODE_ENV=production
 
@@ -24,7 +20,6 @@ COPY lib       /usr/lib/docker-nginx/lib
 COPY bin       /usr/lib/docker-nginx/bin
 RUN npm link
 
-# signals like p.kill() in node don't work without dumb-init
-ENTRYPOINT ["dumb-init"]
+ENTRYPOINT [ "dumb-init", "--" ]
 
-CMD ["startup"]
+CMD [ "startup" ]
