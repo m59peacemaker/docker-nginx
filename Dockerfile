@@ -1,9 +1,9 @@
-FROM node:14.4.0-alpine3.12
+FROM node:16.14.2-alpine3.15
 
 RUN apk add --no-cache \
   ca-certificates \
   dumb-init \
-  nginx=1.18.0-r0
+  nginx=1.20.2-r0
 
 # alpine nginx build needs this to exist
 RUN mkdir /run/nginx
