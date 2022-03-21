@@ -1,5 +1,5 @@
 const {readFileSync, statSync} = require('fs')
-const {safeLoad} = require('js-yaml')
+const { load: load_yaml } = require('js-yaml')
 const reloadRequire = require('require-reload')(require)
 
 const tryCatch = (tryFn, catchFn = () => {}) => {
@@ -22,7 +22,7 @@ const loadConfig = (pathWithoutExt) => {
     return reloadRequire(path)
   } else {
     const doc = readFileSync('/nginx/data.yaml', 'utf8')
-    return safeLoad(doc)
+    return load_yaml(doc)
   }
 }
 
