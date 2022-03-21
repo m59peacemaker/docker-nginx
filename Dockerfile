@@ -5,20 +5,20 @@ RUN apk add --no-cache \
   dumb-init \
   nginx=1.20.2-r0
 
-# alpine nginx build needs this to exist
-RUN mkdir /run/nginx
+ENV APP_DIR="/usr/local/lib/pmkr_nginx"
 
-ENV NODE_ENV=production
+RUN mkdir "${APP_DIR}"
 
-WORKDIR /usr/lib/docker-nginx
+WORKDIR "${APP_DIR}"
 
-COPY package.json /usr/lib/docker-nginx
-RUN npm install
+COPY package.json "${APP_DIR}"
+COPY package-lock.json "${APP_DIR}"
 
-COPY README.md /usr/lib/docker-nginx/
-COPY lib       /usr/lib/docker-nginx/lib
-COPY bin       /usr/lib/docker-nginx/bin
-RUN npm link
+RUN npm ci
+
+COPY src/. "${APP_DIR}/"
+
+RUN ln -s "${APP_DIR}/bin/startup" /usr/local/bin/startup
 
 ENTRYPOINT [ "dumb-init", "--" ]
 
