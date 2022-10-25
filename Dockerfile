@@ -1,9 +1,9 @@
-FROM node:16.14.2-alpine3.15
+FROM node:16.18.0-alpine3.16
 
 RUN apk add --no-cache \
   ca-certificates \
   dumb-init \
-  nginx=1.20.2-r0
+  nginx=1.22.1-r0
 
 ENV APP_DIR="/usr/local/lib/pmkr_nginx"
 
